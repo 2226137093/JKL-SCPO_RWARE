@@ -1,0 +1,6 @@
+<<player1,player2>>Rmin=? [ C ]
+
+<<player1,player2>>Pmax=? [ F "reach_target"]
+
+<<player1,player2>>Pmin=? [ F "safe" ]
+

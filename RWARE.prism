@@ -1,0 +1,41 @@
+//RWARE SCMG Multi-objective Model Checking
+csg
+const int max_shelf = 2; // Maximum shelves
+// Robots' initial positions
+const int r1_init_x = 0; 
+const int r1_init_y = 0;
+const int r2_init_x = 10;
+const int r2_init_y = 9;
+label "reach_target" = (r1_x = 0 & r1_y = 4 & r1_shelf = 2 )|( r2_x = 0 & r2_y = 5 & r2_shelf = 2 )
+|(r1_x = 0 & r1_y = 5 & r1_shelf = 2 )| (r2_x = 0 & r2_y = 4 & r2_shelf = 2 ); // Robot reaches target
+// Define the players and the actions that they can perform
+player player1
+    robot1,[up1],[down1],[ left1], [right1],[ pickup1],[ putdown1]
+endplayer
+player player2
+     robot2,[up2],[down2],[ left2], [right2],[ pickup2],[ putdown2]
+endplayer
+// Define the modules (robots)
+module robot1
+    r1_x : [0..10] init r1_init_x; // x coordinate
+    r1_y : [0..9] init r1_init_y; // y coordinate
+    r1_shelf : [0..max_shelf] init 0; // Current shelves
+    //  Actions and transitions
+    [up1] r1_y < 9 & !(r1_x = r2_x & r1_y + 1 = r2_y) -> (r1_y' = r1_y + 1);
+    [down1] r1_y > 0 & !(r1_x = r2_x & r1_y - 1 = r2_y) -> (r1_y' = r1_y - 1);    
+    [left1] r1_x > 0 & !(r1_x - 1 = r2_x & r1_y = r2_y) -> (r1_x' = r1_x - 1);
+    [right1] r1_x < 10 & !(r1_x + 1 = r2_x & r1_y = r2_y) -> (r1_x' = r1_x + 1);
+    [pickup1] r1_shelf < max_shelf -> (r1_shelf' = r1_shelf + 1);
+    [putdown1] r1_shelf > 0 -> (r1_shelf' = r1_shelf - 1);
+endmodule
+module robot2 = robot1 [ r1_x = r2_x, r1_y = r2_y, r1_shelf = r2_shelf, r1_init_x = r2_init_x, r1_init_y = r2_init_y,
+up1 = up2,down1 = down2, left1 = left2, right1 = right2, pickup1 = pickup2, putdown1 = putdown2]  
+endmodule
+// Safety constraint
+// The robots are not allowed to be in the same position at the same time
+formula collision = (r1_x = r2_x) & (r1_y = r2_y); // Robots collision condition
+label "safe" = !collision; // Safety condition
+// rewards
+rewards "safety_violations"
+  collision : 1;
+endrewards
